@@ -1,5 +1,5 @@
 let initialState = {
-    communityData: [],
+    communityData: {},
     error: false,
     message : ""
 }

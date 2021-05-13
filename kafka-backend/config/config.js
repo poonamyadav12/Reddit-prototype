@@ -13,10 +13,10 @@ module.exports = {
   // mongoDBURI:
   // "mongodb+srv://root:root@cluster0.hy57j.mongodb.net/Reddit?retryWrites=true&w=majority",
 
-  // mongoDBURI:
-  //   "mongodb+srv://root:root@cluster0.hy57j.mongodb.net/Reddit?retryWrites=true&w=majority",
+  mongoDBURI:
+    "mongodb+srv://root:root@cluster0.hy57j.mongodb.net/Reddit?retryWrites=true&w=majority",
 
-  mongoDBURI: 'mongodb+srv://shakthivel:Sunshine123@cluster0.uqmlv.mongodb.net/mongodbreddit?retryWrites=true&w=majority',
+  // mongoDBURI: 'mongodb+srv://shakthivel:Sunshine123@cluster0.uqmlv.mongodb.net/mongodbreddit?retryWrites=true&w=majority',
   kafkaURI: "localhost:2181",
   INVITED_TO_JOIN_COMMUNITY: "INVITED", // Inside community schema
   REQUESTED_TO_JOIN_COMMUNITY: "REQUESTED", // Inside community schema

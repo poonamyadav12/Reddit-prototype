@@ -23,9 +23,12 @@ let errorMyCommunities = (err, data) => {
     }
 }
 let myCommunitiesAction = (data) => (dispatch) => {
-    console.log(BACKEND_URL + ":" + BACKEND_PORT + '/user/communities?userId=' + cookie.load('userId'))
+    console.log(BACKEND_URL + ":" + BACKEND_PORT + '/community/myCommunities?pageNumber=1&pageSize=3')
+    axios.defaults.headers.common["authorization"] = cookie.load("token");
+    axios.defaults.withCredentials = true;
     return axios
-        .get(BACKEND_URL + ":" + BACKEND_PORT + '/user/communities?userId=' + cookie.load('userId'))
+        // .get(BACKEND_URL + ":" + BACKEND_PORT + '/user/communities?userId=' + cookie.load('userId'))
+        .get(BACKEND_URL + ":" + BACKEND_PORT + '/community/myCommunities?pageNumber=1&pageSize=3')
         .then((response) => {
             if (response.status === 200) {
                 console.log("api response>>>>>>>>>>", response)

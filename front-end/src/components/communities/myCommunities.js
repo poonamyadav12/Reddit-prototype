@@ -8,7 +8,7 @@ import './myCommunities.css';
 import { connect } from "react-redux";
 import { Card, Button, CardTitle, CardText, CardBody } from 'reactstrap';
 import myCommunitiesAction from '../../actions/community/myCommunitiesAction';
-import communityList from './communityList';
+import CommunityList from './communityList';
 
 class MyCommunities extends Component {
     constructor(props) {
@@ -16,7 +16,8 @@ class MyCommunities extends Component {
         this.state = {
             userId: cookie.load('userId'),
             error: false,
-            myCommunitiesData: this.props.myCommunitiesData
+            myCommunitiesData: this.props.myCommunitiesData.data,
+            // communityList: this.props.myCommunitiesData.data.communities,
         }
         // this.editButtonClicked = this.editButtonClicked.bind(this);
         // this.removeButtonClicked = this.removeButtonClicked(this);
@@ -28,6 +29,11 @@ class MyCommunities extends Component {
             if (this.props.myCommunitiesError) {
                 this.setState({
                     error: true
+                })
+            } else {
+                this.setState({
+                    myCommunitiesData: this.props.myCommunitiesData.data,
+                    communityList: this.props.myCommunitiesData.data.communities, 
                 })
             }
         })
@@ -49,12 +55,14 @@ class MyCommunities extends Component {
         console.log("Remove button clicked>>>>>>>>>>>>>>>>>>>>>", community)
         // Delete Community
 
-        const newMyCommunitiesData = this.state.myCommunitiesData.filter((filteredCommunity) => {
-            return community._id != filteredCommunity._id
+        const newCommunityList = this.state.communityList.filter((filteredCommunity) => {
+            console.log("Remove button community ", community)
+            console.log("Remove button filtered community", filteredCommunity)
+            return community.communityId != filteredCommunity.communityId
         });
-        const emptyCommunitiesFlag = newMyCommunitiesData.length == 0 ? true : false;
+        const emptyCommunitiesFlag = newCommunityList.length == 0 ? true : false;
         this.setState({
-            myCommunitiesData: newMyCommunitiesData,
+            communityList: newCommunityList,
             emptyCommunitiesFlag
         })
     }
@@ -66,12 +74,13 @@ class MyCommunities extends Component {
         };
 
         let myCommunities = <div>No communities to show</div>
-        console.log("PROPS>>>>>>>>>>>>", this.props)
-        if (this.state.myCommunitiesData.length !== 0) {
-            if (this.state.myCommunitiesData.data.length !== 0) {
-                myCommunities = this.props.myCommunityData.data.map((community) => {
-                    return <communityList
-                        key={community._id}
+        console.log("myCommunities PROPS data>>>>>>>>>>>>", this.props.myCommunitiesData.data)
+        console.log("STATEEEE>>>>>>>>", this.state)
+        if (this.state.communityList) {
+            if (this.state.communityList.length !== 0) {
+                myCommunities = this.state.communityList.map((community) => {
+                    return <CommunityList
+                        key={community.communityId}
                         data={community}
                         editButtonClicked = {this.editButtonClicked}
                         removeButtonClicked = {this.removeButtonClicked}
@@ -124,14 +133,11 @@ class MyCommunities extends Component {
                                     <hr />
 
                                 </CardBody>
-                                {/* <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar"/> <span class="com-name">r/CrytoCurrency</span>
-                                </CardBody> */}
                             </Card>
                         </div>
                         <div class="col-6" style={{ paddingLeft: "0", paddingRight: "24px", paddingTop: "20px" }}>
-                            {/* {myCommunities} */}
-                            <Card>
+                            {myCommunities}
+                            {/* <Card>
                                 <CardBody class="com-card">
                                     <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/CrytoCurrency</span>
                                     <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right"}} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
@@ -190,7 +196,7 @@ class MyCommunities extends Component {
                                     <span className="com-details"><i class="fas fa-users"></i> 100</span>
                                     <span className="com-details"><i class="fas fa-copy"></i> 200</span>
                                 </CardBody>
-                            </Card>
+                            </Card> */}
                         </div>
                         <div class="col-2" style={{ paddingLeft: "0", paddingTop: "20px", marginRight: "65px" }}>
 

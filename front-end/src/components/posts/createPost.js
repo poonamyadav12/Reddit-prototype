@@ -5,6 +5,7 @@
 import React, { Component } from 'react'
 import { TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, CardTitle, CardText, Row, Col, FormGroup } from 'reactstrap';
 import { Form, Label, Input, FormText } from 'reactstrap';
+import cookie from "react-cookies";
 
 import Navbar from '../navbar/navbar';
 
@@ -27,16 +28,19 @@ class CreatePost extends Component {
             description: "",
             link: "",
             communityId: this.props.match.params.id,
-            createPostBackendError: false
+            createPostBackendError: false,
+            postCreateSuccess: false
         }
-        this.onDrop = this.onDrop.bind(this);
+        this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
     }
-
-    onDrop = (picture) => {
-        this.setState({
-            pictures: this.state.pictures.concat(picture)
-        })
+    fileSelectedHandler = (e) => {
+        this.setState({ pictures: [...this.state.pictures, ...e.target.files] })
     }
+    // onDrop = (picture) => {
+    //     this.setState({
+    //         pictures: this.state.pictures.concat(picture)
+    //     })
+    // }
 
     setActiveTab = (tab) => {
         this.setState({
@@ -105,14 +109,29 @@ class CreatePost extends Component {
                     createPostBackendError: true
                 })
             } else {
+                this.setState(
+                    {
+                        postCreateSuccess: true
+                    }
+                )
                 // TODO :Redirect to community page
             }
         })
     }
 
     render() {
+        let renderError = null;
+        if (this.state.createPostBackendError) {
+            renderError = <div class="alert alert-danger" role="alert" style={{ width: "100%" }}>{this.props.message}</div>
+        }
+
+        let renderSuccess = null;
+        if (this.state.postCreateSuccess) {
+            renderSuccess = <div class="alert alert-success" role="alert" style={{ width: "100%" }}>{this.props.message}</div>
+        }
         return (
             <div>
+                { !cookie.load('token') ? window.location.href = '/' : null}
                 <div><Navbar /></div>
                 <div style={{ backgroundColor: "rgb(218,224,230)", height: "1000px" }}>
                     <div className="post-tabs-container">
@@ -172,13 +191,8 @@ class CreatePost extends Component {
                                             <Form method="post" onSubmit={this.handleCreatePost}>
                                                 <FormGroup>
                                                     <Input type="text" name="title" id="title" onChange={this.handleOtherChange} placeholder="Title" maxlength="180" required />
-                                                    <ImageUploader
-                                                        withIcon={true}
-                                                        buttonText='Choose images'
-                                                        onChange={this.onDrop}
-                                                        imgExtension={['.jpg', '.gif', '.png', '.gif', '.jpeg']}
-                                                        maxFileSize={5242880}
-                                                    />
+                                                    <input style={{ background: "none", border: "none" }} type="file" id="file" multiple name="file" data-show-upload="true" data-show-caption="true" onChange={this.fileSelectedHandler} />
+
                                                 </FormGroup>
 
                                                 <button type="submit" class="btn btn-outline-primary post-button"><span style={{ fontSize: "16px", fontWeight: "300px" }} onSubmit={this.handleCreatePost}><strong>Post</strong></span></button>
@@ -207,6 +221,7 @@ class CreatePost extends Component {
                                 </Row>
                             </TabPane>
                         </TabContent>
+                        {renderSuccess}
                     </div>
                 </div>
             </div>

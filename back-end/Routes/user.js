@@ -1,4 +1,5 @@
 const express = require("express");
+import { isValidObjectId } from "mongoose";
 import { uploadS3 } from "../Utils/imageupload";
 import { checkAuth } from "../utils/passport";
 const jwt = require("jsonwebtoken");
@@ -232,8 +233,9 @@ const updateInviteStatus = async (req, res) => {
       } else {
         res.status(200).send({ ...results.res });
       }
-    })
-  }
+    }
+  );
+};
 const getUserProfile = async (req, res) => {
   console.log("Inside get user profile get Request");
   console.log("Request ", req.query);
@@ -257,6 +259,31 @@ const getMyCommunityAnalyticsData = async (req, res) => {
   );
 };
 
+// Get Community Status
+const getCommunityStatus = async (req, res) => {
+  if (!isValidObjectId(req.params.community_id)) {
+    res.status(400).send({ errorMessage: ["Select a valid community"] });
+    return;
+  } else {
+    kafka.make_request(
+      "reddit-community-topic",
+      { path: "get-community-status", user: req.user, params: req.params },
+      (error, results) => {
+        if (!results) {
+          res.status(500).send({
+            errorMessage: ["Failed to receive response from Kafka backend"],
+          });
+        }
+        if (!results.res.success) {
+          res.status(500).send({ ...results.res });
+        } else {
+          res.status(200).send({ ...results.res });
+        }
+      }
+    );
+  }
+};
+
 router.post("/signup", registerUser);
 router.get("/communities", getAllCommunitiesForUser);
 router.get("/getAllCommunityCreatedByUser", getCommunityListCreatedByUser);
@@ -269,5 +296,6 @@ router.get("/notifications", checkAuth, getNotifications);
 router.post("/invite/update", checkAuth, updateInviteStatus);
 router.get("/getUserProfile", getUserProfile);
 router.get("/myCommunityAnalytics", checkAuth, getMyCommunityAnalyticsData);
+router.get("/getCommunityStatus/:community_id", checkAuth, getCommunityStatus);
 
 module.exports = router;

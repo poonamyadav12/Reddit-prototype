@@ -2,8 +2,6 @@ import { checkAuth } from "../utils/passport";
 import { uploadS3 } from "../Utils/imageupload";
 
 const express = require("express");
-const { auth } = require("../utils/passport");
-const Joi = require("joi");
 const kafka = require("../kafka/client");
 const ObjectId = require("mongoose").Types.ObjectId;
 
@@ -18,14 +16,16 @@ const getUsersOfMyCommunitySchema = require("../dataSchema/getUsersOfMyCommunity
 const communityVoteSchema = require("../dataSchema/communityVoteSchema");
 const bulkApproveRequestsSchema = require("../dataSchema/bulkApproveRequestsSchema");
 const getInviteStatusSchema = require("../dataSchema/getInvitesStatusSchema");
+const getMyCommunitiesOfAUserSchema = require("../dataSchema/getMyCommunitiesOfAUserSchema");
+const deleteUserFromMultipleCommunitiesSchema = require("../dataSchema/deleteUserFromMultipleCommunitiesSchema");
 require("dotenv").config();
 
 const router = express.Router();
 
 const createCommunity = async (req, res) => {
   console.log("Inside create community post Request");
-console.log("Body",req.body);
-console.log("Files",req.files)
+  console.log("Body", req.body);
+  console.log("Files", req.files);
   if (!req.files.communityAvatar) {
     res
       .status(400)
@@ -80,8 +80,9 @@ const updateCommunity = async (req, res) => {
     return;
   }
 
-  const { error, value } = updateCommunitySchema
-    .validate(JSON.parse(req.body.community));
+  const { error, value } = updateCommunitySchema.validate(
+    JSON.parse(req.body.community)
+  );
 
   if (error) {
     res.status(400).send(error.details);
@@ -318,6 +319,73 @@ const getInviteStatusOfUsersOfMyCommunity = async (req, res) => {
   }
 };
 
+// Route to fetch the communities of which a user is a member of loggedIn user's created communities
+const getMyCommunitiesOfAUser = async (req, res) => {
+  const result = await getMyCommunitiesOfAUserSchema.validate(req.query);
+  if (result.error) {
+    res.status(400).send({ errorMessage: [result.error.details[0].message] });
+    return;
+  } else {
+    kafka.make_request(
+      "reddit-community-topic",
+      {
+        path: "get-mycommunities-of-user",
+        user: req.user,
+        query: req.query,
+      },
+      (error, results) => {
+        if (!results) {
+          res.status(500).send({
+            errorMessage: ["Failed to receive response from Kafka backend"],
+          });
+        }
+        if (!results.res.success) {
+          res.status(500).send({ ...results.res });
+        } else {
+          res.status(200).send({ ...results.res });
+        }
+      }
+    );
+  }
+};
+
+// Route to delete a user from multiple communities
+const deleteUserFromMultipleCommunities = async (req, res) => {
+  const result = await deleteUserFromMultipleCommunitiesSchema.validate(
+    req.body
+  );
+  if (result.error) {
+    res.status(400).send({ errorMessage: [result.error.details[0].message] });
+    return;
+  }
+  if (req.body.user == req.user._id) {
+    res
+      .status(400)
+      .send({ errorMessage: "Cannot remove yourself from comunity!" });
+    return;
+  }
+  kafka.make_request(
+    "reddit-post-topic",
+    {
+      path: "delete-user-from-communities",
+      user: req.user,
+      body: req.body,
+    },
+    (error, results) => {
+      if (!results) {
+        res.status(500).send({
+          errorMessage: ["Failed to receive response from Kafka backend"],
+        });
+      }
+      if (!results.res.success) {
+        res.status(500).send({ ...results.res });
+      } else {
+        res.status(200).send({ ...results.res });
+      }
+    }
+  );
+};
+
 export async function getCommunityDetails(req, res) {
   console.log("inside get community details", req.query.communityId);
   let communityId = req.query.communityId;
@@ -398,7 +466,7 @@ export async function downVoteCommunity(req, res) {
 export async function searchCommunity(req, res) {
   console.log("inside community search", req.query);
   const value = req.user._id;
-  console.log("SEARCH COMMUNITY",req.user);
+  console.log("SEARCH COMMUNITY", req.user);
   kafka.make_request(
     "reddit-community-topic",
     {
@@ -407,9 +475,11 @@ export async function searchCommunity(req, res) {
       options: {
         pageIndex: req.query.pageIndex || 1,
         pageSize: req.query.pageSize || 50,
-        sortBy: req.query.sortBy || 'createdAt',
-        sortOrder: req.query.sortOrder || 'desc',
-        searchKeyword: req.query.searchKeyword ? `${req.query.searchKeyword}.*` : '.*'
+        sortBy: req.query.sortBy || "createdAt",
+        sortOrder: req.query.sortOrder || "desc",
+        searchKeyword: req.query.searchKeyword
+          ? `${req.query.searchKeyword}.*`
+          : ".*",
       },
     },
     (err, results) => kafka_default_response_handler(res, err, results)
@@ -431,7 +501,8 @@ router.post(
   createCommunity
 );
 
-router.post("/update",
+router.post(
+  "/update",
   uploadS3.fields([
     {
       name: "communityAvatar",
@@ -441,7 +512,9 @@ router.post("/update",
       name: "communityCover",
       maxCount: 1,
     },
-  ]), updateCommunity);
+  ]),
+  updateCommunity
+);
 router.post("/join", checkAuth, requestToJoinCommunity);
 router.post("/upvote", checkAuth, upVoteCommunity);
 router.post("/downvote", checkAuth, downVoteCommunity);
@@ -463,6 +536,11 @@ router.get(
   checkAuth,
   getInviteStatusOfUsersOfMyCommunity
 );
+router.get(
+  "/mycommunities/user/communities",
+  checkAuth,
+  getMyCommunitiesOfAUser
+);
 //router.get("/mycommunities/:id", checkAuth, getMyCommunities);
 router.get("/posts", checkAuth, getAllPosts);
 router.delete("/delete", deleteCommunity);
@@ -471,4 +549,5 @@ router.post(
   checkAuth,
   bulkInviteUsersToCommunity
 );
+router.post("/delete/user", checkAuth, deleteUserFromMultipleCommunities);
 module.exports = router;

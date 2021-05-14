@@ -9,7 +9,7 @@ import {
 import { connect } from "react-redux";
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-
+import { Link } from 'react-router-dom';
 import avatar from '../../images/avatar.png';
 import './Post.css'
 import { Row, Col, CardTitle } from 'reactstrap';
@@ -38,6 +38,8 @@ class Post extends Component {
             updatedAt: this.props.data.updatedAt,
             voteStatus: this.props.data.voteStatus,
             votes: this.props.data.votes,
+            link: this.props.data.link,
+
             title: this.props.data.title,
             type: this.props.data.type,
             score: 0,
@@ -46,7 +48,8 @@ class Post extends Component {
             comments: this.props.data.comments,
             firstCommentDescription: "",
             commentFlag: false,
-            createdBy: this.props.data.user.name
+            createdBy: this.props.data.user.name,
+            userData: this.props.data.user
         }
     };
     handleDescriptionChange = (e) => {
@@ -101,7 +104,8 @@ class Post extends Component {
             "community_id": this.state.community_id
         }
         this.props.createCommentAction(obj).then(response => {
-            this.props.refreshComments();
+            console.log(this.props)
+            // this.props.refreshComments();
         })
     }
     commentsClicked = inp => {
@@ -111,7 +115,6 @@ class Post extends Component {
     }
     displayComments = (allComments) => {
         let comments = []
-        console.log("here")
         for (let comment of Object.values(allComments)) {
             comments.push(<Comment
                 commentData={comment}
@@ -156,10 +159,14 @@ class Post extends Component {
 
                             </Col>
                             <Col style={{ paddingLeft: "0px" }}>
-                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "7%" }}>Posted by u/{this.state.createdBy} {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+                        <Link style={{ color: "black" }} to={{
+                                        pathname: "/users/profile-page", state: {
+                                            userData: this.state.userData
+                                        }
+                                    }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
 
                                 </span>
-
                                 <CardTitle tag="h5" style={{ marginLeft: "7%", marginTop: "5px" }}>{this.state.title}</CardTitle>
                                 <div style={{ marginBottom: "5px" }}>
                                     <CarouselProvider
@@ -204,8 +211,14 @@ class Post extends Component {
                             </Col>
 
                             <Col>
+                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+                        <Link style={{ color: "black" }} to={{
+                                        pathname: "/users/profile-page", state: {
+                                            userData: this.state.userData
+                                        }
+                                    }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
 
-                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }}>Posted by u/ {this.state.createdBy} {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}</span>
+                                </span>
                                 <CardBody>
                                     <CardTitle tag="h5">{this.state.title}</CardTitle>
                                     <CardText>{this.state.description}</CardText>
@@ -235,13 +248,18 @@ class Post extends Component {
                     </Col>
 
                     <Col>
-                        <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}>Posted by u/{this.state.createdBy}  {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+                        <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+                        <Link style={{ color: "black" }} to={{
+                                pathname: "/users/profile-page", state: {
+                                    userData: this.state.userData
+                                }
+                            }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
 
                         </span>
                         <CardBody>
                             <CardTitle tag="h5">{this.state.title}</CardTitle>
                             <CardText>
-                                <a href={this.state.link}>{this.state.link}</a>
+                                <a href={this.state.link} style={{ maxWidth: "30px" }}>{this.state.link}</a>
                             </CardText>
                         </CardBody>
                     </Col>
@@ -258,44 +276,6 @@ class Post extends Component {
                     </Button></Row>
             </Card >
         }
-        // else if (this.state.type == "link") {
-        //     postDivision = <Card >
-        //         <Row>
-        //             <button
-        //                 onClick={this.upVote}>
-        //             </button>
-        //             {this.state.votes}
-        //             <button
-        //                 onClick={this.downVote}>
-        //             </button>
-        //             <Col>
-        //                 <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }}>Posted by u/{this.state.createdBy} {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}</span>
-        //                 <CardBody>
-        //                     <CardTitle tag="h5">{this.state.title}</CardTitle>
-        //                     <CardText>
-        //                         <a href={this.state.link}></a>
-        //                     </CardText>
-        //                 </CardBody>
-        //             </Col>
-        //         </Row>
-        //         <Row style={{ backgroundColor: "#F5F5F5", height: "30px", padding: "10px", width: "103%", paddingLeft: "10%" }}>
-        //             <ModeCommentTwoToneIcon style={{ fontSize: "18px" }} />
-        //             <span style={{ fontSize: "14px", fontWeight: "300px", marginBottom: "14px", paddingLeft: "8px" }}>
-        //                 {this.state.numberOfComments} Comments
-        //                     </span>
-        //         </Row >
-        //         <Row style={{ backgroundColor: "#F5F5F5", height: "30px", width: newLocal, paddingLeft: "10%" }}>
-        //             <Button
-        //                 size="small"
-        //                 onClick={this.commentsClicked}
-        //             >
-        //                 <ModeCommentTwoToneIcon style={{ fontSize: "18px" }} />
-        //                 <span style={{ fontSize: "12px", fontWeight: "300px", textTransform: "capitalize" }}>
-        //                     {this.state.numberOfComments} Comments
-        //                     </span>
-        //             </Button></Row>
-        //     </Card >
-        // }
         return (
             <div style={{ marginTop: "10%" }}>
                 {postDivision}

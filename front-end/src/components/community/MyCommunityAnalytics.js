@@ -125,6 +125,7 @@ class MyCommunityAnalytics extends React.Component {
     return (
       <>
         <div>
+          {!cookie.load('token') ? window.location.href = '/' : null}
           <Navbar />
         </div>
         {this.state.communityWithMaxPost ? <div style={{ textAlign: "right", marginRight: "10rem" }}><h5> Community with max posts <b>{`${this.state.communityWithMaxPost.communityName}`}</b> <br></br>Number of posts = <b>{`${this.state.communityWithMaxPost.numberOfPosts}`}</b>  </h5></div> : <h5>No community with max posts yet</h5>}

@@ -62,6 +62,7 @@ class Notification extends React.Component {
     console.log("Invited notifications ", pendingNotifications);
     return (
       <>
+        { !cookie.load('token') ? window.location.href = '/' : null}
         <Navbar />
         <Container fluid={true}>
           {this.state.error &&

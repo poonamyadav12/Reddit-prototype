@@ -9,7 +9,10 @@ const { uniqueNamesGenerator, names } = require("unique-names-generator");
 const aleaRNGFactory = require("number-generator/lib/aleaRNGFactory");
 const { uInt32 } = aleaRNGFactory(10);
 const ObjectId = require("mongodb").ObjectID;
-import { populateVotesAndCommentsOfPosts, getCommunityByUserIdV2 } from "./community_api";
+import {
+  populateVotesAndCommentsOfPosts,
+  getCommunityByUserIdV2,
+} from "./community_api";
 const redis = require("redis");
 const client = redis.createClient({ detect_buffers: true });
 
@@ -268,9 +271,12 @@ export const getUsersOfMyCommunity = async (req, callback) => {
 
     // Find the array of userIds who has been searched by the creator
     const users = community.members
-      .filter(
-        (membership) => membership.communityJoinStatus === communityJoinStatus
-      )
+      .filter((membership) => {
+        return (
+          membership.communityJoinStatus === communityJoinStatus &&
+          membership._id != community.creator
+        );
+      })
       .map((membership) => membership._id);
 
     const customLabels = {
@@ -396,12 +402,12 @@ async function getAggregatedPostsAndCommunity(userId, options) {
         as: "community",
       },
     },
-    
+
     {
       $addFields: {
         createdBy: { $arrayElemAt: ["$createdBy", 0] },
         community: { $arrayElemAt: ["$community", 0] },
-        
+
       },
     },
     {
@@ -539,7 +545,9 @@ export async function getMyCommunityAnalyticsData(message, callback) {
   let response = {};
   let err = {};
   try {
-    const communityResponseAnlaytics = await getMyCommunityAnalyticsDataPerUser(userId);
+    const communityResponseAnlaytics = await getMyCommunityAnalyticsDataPerUser(
+      userId
+    );
     console.log("Here ", communityResponseAnlaytics);
     response.data = communityResponseAnlaytics;
     response.status = 200;

@@ -32,6 +32,10 @@ import moment from 'moment'
 class MyCommunity extends Component {
     constructor(props) {
         super(props)
+        let communityID = "";
+        if (cookie.load('token')) {
+            communityID = this.props.location.state.communityData._id;
+        }
         this.state = {
             communityList: [
                 {
@@ -48,7 +52,7 @@ class MyCommunity extends Component {
             postFlag: false,
             communityCover: "",
             communityAvatar: "",
-            communityID: this.props.location.state.communityData._id,
+            communityID,
             description: "",
             communityName: "",
             errorMsg: false,
@@ -84,7 +88,8 @@ class MyCommunity extends Component {
             prevPage: "",
             totalPages: "",
             popularity: 0,
-            sorting: 1
+            sorting: 1,
+            showPostFlag: false
         }
     }
     handlePageClick = (e) => {
@@ -109,14 +114,12 @@ class MyCommunity extends Component {
                 }
             )
         })
-
     };
     postClick = e => {
         this.setState({ postFlag: true });
 
     }
     refreshCommentsAfterAdd = () => {
-        console.log("In My community refresh comments after add", this.state);
         this.props.getPostsByIDAction(this.state).then(response => {
             this.setState(
                 {
@@ -163,7 +166,9 @@ class MyCommunity extends Component {
         })
     }
     handleRequestAcceptClick = (e) => {
+
         this.props.communityJoinRequestAction(this.state.communityID).then(response => {
+
             if (this.props.error) {
                 toast.error(this.props.errorMessage, {
                     position: "top-center",
@@ -175,11 +180,17 @@ class MyCommunity extends Component {
                     progress: undefined,
                 });
             }
-            // this.setState(
-            //     {
-            //         errorMsg : this.props.error
-            //     }
-            // )
+            else {
+                toast.success("Update successfull", {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                });
+            }
         })
 
     }
@@ -221,7 +232,6 @@ class MyCommunity extends Component {
                 sorting: e.target.value
             }
         )
-        //TODO : ADD COMMUNITYid 
         let obj = {
             communityID: this.state.communityID,
             popularity: this.state.popularity,
@@ -246,78 +256,121 @@ class MyCommunity extends Component {
         })
     }
     componentDidMount() {
-        this.setState(
-            {
-                communityID: this.props.location.state.communityData._id,
-                communityCover: this.props.location.state.communityData.communityCover,
-                communityAvatar: this.props.location.state.communityData.communityAvatar,
-                communityName: this.props.location.state.communityData.communityName,
-                createdAt: this.props.location.state.communityData.createdAt,
-                members: this.props.location.state.communityData.members.length,
-                description: this.props.location.state.communityData.description,
-                totalPosts: this.props.location.state.communityData.numberOfPosts,
-                rules: this.props.location.state.communityData.rules,
+        console.log(this.props.location.state.communityData)
+        if (cookie.load('token')) {
+            this.setState(
+                {
+                    communityID: this.props.location.state.communityData._id,
+                    communityCover: this.props.location.state.communityData.communityCover,
+                    communityAvatar: this.props.location.state.communityData.communityAvatar,
+                    communityName: this.props.location.state.communityData.communityName,
+                    createdAt: this.props.location.state.communityData.createdAt,
+                    members: this.props.location.state.communityData.members.length,
+                    description: this.props.location.state.communityData.description,
+                    totalPosts: this.props.location.state.communityData.numberOfPosts,
+                    rules: this.props.location.state.communityData.rules,
+                    listOfUsers: this.props.location.state.communityData.members
 
 
-            }
-        )
-
-        axios.defaults.headers.common["authorization"] = cookie.load('token')
-        axios.defaults.withCredentials = true;
-        axios
-            .get(BACKEND_URL + ":" + BACKEND_PORT + '/community/get?communityId=' + this.props.location.state.communityData._id
+                }
             )
-            .then((response) => {
-                if (response.status === 200) {
-                    console.log(response.data.members)
 
-                    for (let i = 0; i < response.data.members.length; i++) {
-                        console.log(response.data.members[i]._id._id)
-                        if (response.data.members[i]._id._id == cookie.load('userId')) {
-                            console.log(response.data.members[i].communityJoinStatus)
+            axios.defaults.headers.common["authorization"] = cookie.load('token')
+            axios.defaults.withCredentials = true;
+            console.log("HJABHJABSHJBAHJSBHJS", this.props.location.state.communityData._id)
+            console.log(BACKEND_URL + ":" + BACKEND_PORT + '/community/get?communityId=' + this.props.location.state.communityData._id)
+            axios
+                .get(BACKEND_URL + ":" + BACKEND_PORT + '/community/get?communityId=' + this.props.location.state.communityData._id
+                )
+                .then((response) => {
+                    if (response.status === 200) {
+                        console.log(response.data.members)
+                        let foundFlag = false;
+                        for (let i = 0; i < response.data.members.length; i++) {
+                            console.log(response.data.members[i]._id._id)
+                            if (response.data.members[i]._id._id == cookie.load('userId')) {
+                                console.log(response.data.members[i].communityJoinStatus)
+
+                                this.setState(
+                                    {
+                                        buttonStatus: response.data.members[i].communityJoinStatus
+                                    }
+                                )
+                                if (response.data.members[i].communityJoinStatus == "JOINED") {
+                                    this.setState(
+                                        {
+                                            showPostFlag: true
+                                        }
+                                    )
+                                }
+                                foundFlag = true;
+                                break;
+                            }
+                        }
+                        if (!foundFlag) {
                             this.setState(
                                 {
-                                    buttonStatus: response.data.members[i].communityJoinStatus
+                                    buttonStatus: "JOIN"
                                 }
                             )
                         }
 
                     }
+                })
+                .catch((err) => {
+                });
 
-                }
-            })
-            .catch((err) => {
-            });
-        document.title = this.props.location.state.communityData.communityName
-        var str = this.props.location.state.communityData.communityName;
-        str = str.replace(/\s+/g, '').toLowerCase();
-        this.setState(
-            {
-                communityNameWithoutSpaces: str
-            }
-        )
-        this.props.getPostsByIDAction(this.state).then(response => {
+            document.title = this.props.location.state.communityData.communityName
+            var str = this.props.location.state.communityData.communityName;
+            str = str.replace(/\s+/g, '').toLowerCase();
             this.setState(
                 {
-                    posts: this.props.postData.posts,
-                    hasNextPage: this.props.postData.hasNextPage,
-                    hasPrevPage: this.props.postData.hasPrevPage,
-                    nextPage: this.props.postData.nextPage,
-                    pageNumber: this.props.postData.pageNumber,
-                    pageSize: this.props.postData.pageSize,
-                    prevPage: this.props.postData.prevPage,
-                    totalPages: this.props.postData.totalPages,
-                    totalPosts: this.props.postData.totalPosts
-
+                    communityNameWithoutSpaces: str
                 }
             )
-        })
+            this.props.getPostsByIDAction(this.state).then(response => {
+                this.setState(
+                    {
+                        communityNameWithoutSpaces: str
+                    }
+                )
+                this.props.getPostsByIDAction(this.state).then(response => {
+                    this.setState(
+                        {
+                            posts: this.props.postData.posts,
+                            hasNextPage: this.props.postData.hasNextPage,
+                            hasPrevPage: this.props.postData.hasPrevPage,
+                            nextPage: this.props.postData.nextPage,
+                            pageNumber: this.props.postData.pageNumber,
+                            pageSize: this.props.postData.pageSize,
+                            prevPage: this.props.postData.prevPage,
+                            totalPages: this.props.postData.totalPages,
+                            totalPosts: this.props.postData.totalPosts
+
+                        }
+                    )
+                })
+            })
+        }
     }
     render() {
+        console.log(this.state.rules)
         let renderPost = null;
         let renderButton = null;
         let renderJoinError = null;
+        // let listOfUsers = this.state.listOfUsers.map((user, index) => {
+        //     return (
+        //         <div>
+        //                 <Card style={{ marginTop: "15px", border: "1px" }}>
+        //                     <CardBody>
+        //                         {user.name}
+        //                     </CardBody>
+        //                 </Card>
 
+        //         </div>
+        //     );
+        // }
+        // )
         if (this.state.errorMsg) {
 
             renderJoinError = toast(this.props.errorMessage, {
@@ -333,15 +386,19 @@ class MyCommunity extends Component {
         }
         if (this.state.buttonStatus == 'JOINED') {
             renderButton =
-                <button className="joined" type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} onClick={this.handleRequestAcceptClick} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>JOINED</strong></span></button>
+                <button className="joined" type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} onClick={this.handleRequestAcceptClick} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>LEAVE</strong></span></button>
 
         }
         if (this.state.buttonStatus == 'INVITED') {
             renderButton = <button type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} class="btn btn-outline-primary" onClick={this.handleRequestAcceptClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>INVITED</strong></span></button>
 
         }
+        if (this.state.buttonStatus == 'JOIN') {
+            renderButton = <button type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} class="btn btn-outline-primary" onClick={this.handleRequestAcceptClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>JOIN</strong></span></button>
+
+        }
         if (this.state.buttonStatus == 'REQUESTED') {
-            renderButton = <button type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} class="btn btn-outline-primary" onClick={this.handleRequestAcceptClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>REQUESTED</strong></span></button>
+            renderButton = <button type="button" id="login-button" style={{ color: "#0079d3", borderRadius: "60px" }} class="btn btn-outline-primary" onClick={this.handleRequestAcceptClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>WAITING FOR APPROVE </strong></span></button>
 
         }
         if (this.state.buttonStatus == 'REJECTED') {
@@ -370,6 +427,7 @@ class MyCommunity extends Component {
         let rulesAccordion = this.state.rules.map((rule, index) => {
             return (
                 <div>
+
                     <Accordion style={{ width: "323px" }}>
                         <Card style={{ marginTop: "15px", border: "1px" }}>
                             < Accordion.Toggle as={Card.Header} style={{ backgroundColor: "white", border: "none" }} eventKey={index + 1}>
@@ -393,6 +451,7 @@ class MyCommunity extends Component {
         }
         return (
             <div>
+                { !cookie.load('token') ? window.location.href = '/' : null}
                 {renderPost}
                 <div>
                     <Navbar />
@@ -430,7 +489,8 @@ class MyCommunity extends Component {
                                 </div>
                                 <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
                                     <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select" onChange={this.handlePopularityChange}>
-                                        <option selected value="1">Most Popular</option>
+                                        <option hidden disabled selected value> -- select-- </option>
+                                        <option value="1">Most Popular</option>
                                         <option value="2">Unpopular</option>
                                     </select>
                                 </div>
@@ -460,14 +520,18 @@ class MyCommunity extends Component {
                         </Card>
                     </Col>
                     <Col xs="5" style={{ paddingTop: "40px", marginLeft: "5%" }}>
-                        <div className="post" style={{ height: "50px", backgroundColor: "white" }}>
-                            <img src={post} height="30px" width="30px" alt="reddit-logo" />
-                            <input type="text" style={{ width: "100%", marginLeft: "2%" }} onClick={this.postClick} placeholder="Create Post" />
-                            <img src={houseicon} height="30px" width="40px" alt="reddit-logo" />
-                            <img src={linkicon} height="30px" width="40px" alt="reddit-logo" />
-                        </div>
+                        {this.state.showPostFlag ?
+                            <div className="post" style={{ height: "50px", backgroundColor: "white" }}>
+
+                                <img src={post} height="30px" width="30px" alt="reddit-logo" />
+                                <input type="text" style={{ width: "100%", marginLeft: "2%" }} onClick={this.postClick} placeholder="Create Post" />
+                                <img src={houseicon} height="30px" width="40px" alt="reddit-logo" />
+                                <img src={linkicon} height="30px" width="40px" alt="reddit-logo" />
+                            </div>
+                            : ""}
                         <div style={{ paddingTop: "3%", marginLeft: "3%" }}>
-                            {postComponent}
+                            {this.state.totalPosts == 0 ? "No posts to show" : postComponent}
+                            {/* {postComponent} */}
                         </div>
                     </Col>
                     <Col xs="3" style={{ paddingTop: "40px", marginLeft: "6%" }}>
@@ -518,7 +582,7 @@ class MyCommunity extends Component {
                                                 Created at {moment(this.state.createdAt).format("LL")}
                                                 {/* {moment(group.createdat).tz(cookie.load("timezone")).format("MMM")} */}
                                             </span>
-                                            <button type="button" id="login-button" style={{ backgroundColor: "#0079d3", color: "white", borderRadius: "60px", width: "100%", marginTop: "10%" }} class="btn btn-outline-primary" onClick={this.postClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Create Post</strong></span></button>
+                                            <button type="button" disabled={!this.state.showPostFlag} id="login-button" style={{ backgroundColor: "#0079d3", color: "white", borderRadius: "60px", width: "100%", marginTop: "10%" }} class="btn btn-outline-primary" onClick={this.postClick}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Create Post</strong></span></button>
                                         </Col>
                                     </Row>
                                     <br></br>

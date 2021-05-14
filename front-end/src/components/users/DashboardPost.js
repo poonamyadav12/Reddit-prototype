@@ -23,6 +23,8 @@ import getPostAction from '../../actions/posts/getPostAction';
 import upvotePostAction from '../../actions/posts/upVoteAction';
 import downVotePostAction from '../../actions/posts/downVoteAction';
 import ModeCommentTwoToneIcon from '@material-ui/icons/ModeCommentTwoTone';
+import { Link } from 'react-router-dom';
+
 const newLocal = "103%";
 class DashboardPost extends Component {
     constructor(props) {
@@ -43,7 +45,7 @@ class DashboardPost extends Component {
             type: this.props.data.type,
             score: 0,
             vote: 0,
-            
+            userData: this.props.data.createdBy,
             description: this.props.data.description,
             comments: this.props.data.comments,
             firstCommentDescription: "",
@@ -159,7 +161,16 @@ class DashboardPost extends Component {
 
                             </Col>
                             <Col style={{ paddingLeft: "0px" }}>
-                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "7%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull; </span >Posted by u/{this.state.createdBy}  {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull;
+
+                                </span >                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+                        <Link style={{ color: "black" }} to={{
+                                            pathname: "/users/profile-page", state: {
+                                                userData: this.state.userData
+                                            }
+                                        }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+
+                                    </span>
 
                                 </span>
 
@@ -207,9 +218,19 @@ class DashboardPost extends Component {
 
                             <Col>
 
-                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull; </span >Posted by u/{this.state.createdBy}  {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull;
 
-                                </span>                                <CardBody>
+</span >                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+<Link style={{ color: "black" }} to={{
+                                            pathname: "/users/profile-page", state: {
+                                                userData: this.state.userData
+                                            }
+                                        }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+
+                                    </span>
+
+                                </span>
+                                <CardBody>
                                     <CardTitle tag="h5">{this.state.title}</CardTitle>
                                     <CardText>{this.state.description}</CardText>
                                 </CardBody>     </Col>
@@ -239,7 +260,16 @@ class DashboardPost extends Component {
                     </Col>
 
                     <Col>
-                        <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull; </span >Posted by u/{this.state.createdBy}  {moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+                        <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "4%" }}><span style={{ color: "black", fontWeight: "1000" }}>r/ {this.state.communityName} &bull;
+
+</span >                                <span style={{ color: "#787C7E", fontSize: "12px", marginLeft: "3%" }} >  Posted by u/
+<Link style={{ color: "black" }} to={{
+                                    pathname: "/users/profile-page", state: {
+                                        userData: this.state.userData
+                                    }
+                                }}>{this.state.createdBy}</Link>&nbsp;{moment.utc(this.state.createdAt).local().startOf('seconds').fromNow()}
+
+                            </span>
 
                         </span>
                         <CardBody>

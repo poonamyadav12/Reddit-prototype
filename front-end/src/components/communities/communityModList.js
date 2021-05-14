@@ -33,7 +33,7 @@ class CommunityModList extends Component {
   }
 
   componentDidMount() {
-    console.log("----------inside list component-------------", this.props);
+    console.log("-=-=-=-=-=-inside community mod lissstttt=-=-=-=-=-=-=-=-=-=-", this.props);
   }
 
   toggleUsersList = () => {

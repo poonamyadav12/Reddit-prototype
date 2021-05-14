@@ -7,10 +7,12 @@ import { Row, Col, CardTitle } from 'reactstrap';
 import {
     Card, CardText, CardBody,
 } from 'reactstrap';
+import cookie from 'react-cookies';
 import ReactPaginate from 'react-paginate';
 
 import _ from 'lodash';
 import { InputGroup, InputGroupAddon, InputGroupText, Input } from 'reactstrap';
+import { BrowserRouter } from 'react-router-dom';
 
 export class Dashboard extends Component {
 
@@ -23,6 +25,7 @@ export class Dashboard extends Component {
             pageSize: 2,
             select: "",
             sorting: "desc",
+            noPostFlag: false
 
         }
     }
@@ -154,6 +157,15 @@ export class Dashboard extends Component {
     async componentDidMount() {
         this.props.getDashboardDataAction(this.state).then(response => {
             console.log(this.props.dashboardData)
+            if (this.props.dashboardData.docs.length == 0) {
+                this.setState(
+                    {
+                        noPostFlag: true
+                    }
+                )
+                return
+
+            }
             this.setState(
                 {
                     docs: this.props.dashboardData.docs,
@@ -173,6 +185,7 @@ export class Dashboard extends Component {
         ))
         return (
             <div>
+                { !cookie.load('token') ? window.location.href = '/' : null}
                 <Navbar />
                 <Row style={{ backgroundColor: "#DAE0E6", marginTop: "2%" }}>
                     <Col xs="2" style={{ paddingTop: "3%", paddingLeft: "2.5%", marginLeft: "1%" }}>
@@ -229,22 +242,33 @@ export class Dashboard extends Component {
                             </Row>
                         </div>
                         <div style={{ marginLeft: "3%" }}>
-                            {postComponent}
+
+                            {this.state.noPostFlag ?
+
+                                <span style={{ marginTop: "30%" }}>
+                                    "No Posts to show"</span> :
+                                <div>
+                                    {postComponent}
+                                    <Col className="pagination-class">
+                                        <ReactPaginate
+                                            previousLabel={"prev"}
+                                            nextLabel={"next"}
+                                            breakLabel={"..."}
+                                            breakClassName={"break-me"}
+                                            pageCount={this.state.totalPages}
+                                            marginPagesDisplayed={2}
+                                            pageRangeDisplayed={5}
+                                            onPageChange={this.handlePageClick}
+                                            containerClassName={"pagination"}
+                                            subContainerClassName={"pages pagination"}
+                                            activeClassName={"active"} />
+                                    </Col>
+                                </div>
+
+                            }
+                            {/* {postComponent} */}
                         </div>
-                        <Col className="pagination-class">
-                            <ReactPaginate
-                                previousLabel={"prev"}
-                                nextLabel={"next"}
-                                breakLabel={"..."}
-                                breakClassName={"break-me"}
-                                pageCount={this.state.totalPages}
-                                marginPagesDisplayed={2}
-                                pageRangeDisplayed={5}
-                                onPageChange={this.handlePageClick}
-                                containerClassName={"pagination"}
-                                subContainerClassName={"pages pagination"}
-                                activeClassName={"active"} />
-                        </Col>
+
                     </Col>
                 </Row>
             </div>

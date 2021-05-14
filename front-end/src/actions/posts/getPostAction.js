@@ -25,7 +25,6 @@ var error = (err) => {
     }
 }
 var getPostsByIDAction = (data) => (dispatch) => {
-    console.log(data);
     axios.defaults.headers.common["authorization"] = cookie.load('token')
     axios.defaults.withCredentials = true;
     return axios

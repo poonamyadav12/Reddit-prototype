@@ -13,7 +13,7 @@ var createCommunityReducer = (state = initialState, action) => {
             return newState;
         case "create_community_fail":
             newState.error = true;
-            newState.message = "Sorry there was an error in updating the community."
+            newState.message = action.payload.response.response.data.errorMessage;
             return newState;
         default:
             return newState;

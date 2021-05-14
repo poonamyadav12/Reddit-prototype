@@ -15,6 +15,14 @@ let myCommunitiesReducer = (state = initialState, action) => {
             newState.error = true;
             newState.message = "Error while getting communities"
             return newState;
+        case "my_communities_delete_success":
+            newState.communityData = action.payload.response;
+            newState.error = false;
+            return newState;
+        case "my_communities_delete_failed":
+            newState.error = true;
+            newState.message = "Error while deleting community"
+            return newState;
         default:
             return newState;
     }

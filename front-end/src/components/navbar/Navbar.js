@@ -9,7 +9,7 @@ import chat_icon from '../../images/chat-icon.png'
 import axios from 'axios';
 import { BACKEND_URL, BACKEND_PORT } from '../../config/config';
 import cookie from "react-cookies";
-import Modal from 'react-bootstrap/modal';
+import Modal from 'react-bootstrap/Modal';
 import loginAction from '../../actions/loginAction'
 import signUpAction from '../../actions/signupAction'
 import chatSubmitAction from '../../actions/chat/chatSubmitAction'
@@ -26,6 +26,7 @@ import { MessageList } from 'react-chat-elements'
 import { Input } from 'react-chat-elements'
 import { Button } from 'react-chat-elements';
 import _ from 'lodash';
+import history from '../history';
 // /chat/getChatMemberList
 const customStyles = {
     content: {
@@ -267,6 +268,7 @@ class Navbar extends Component {
             this.props.signUpAction(signUpObject).then(response => {
                 console.log("signup response >>>>>>>>>>>>>", this.props)
                 if (this.props.signUpError) {
+                    alert(this.props.signUpMessage)
                     this.setState({
                         signUpBackendError: true
                     })
@@ -274,6 +276,8 @@ class Navbar extends Component {
                     this.setState({
                         signupButton: !this.state.signupButton
                     })
+                    window.location.assign('/dashboard')
+
                 }
             })
         };
@@ -301,9 +305,12 @@ class Navbar extends Component {
                     this.setState({
                         loginButton: !this.state.loginButton
                     })
+                    window.location.assign('/dashboard')
                 }
             })
-        };
+        }
+
+        ;
 
 
     }
@@ -311,6 +318,7 @@ class Navbar extends Component {
 
     handleLogout = (e) => {
         var cookies = null;
+        history.push('/');
         if (cookie.load("auth")) {
             cookies = cookie.loadAll();
             console.log(cookies);
@@ -323,12 +331,18 @@ class Navbar extends Component {
                 }
             )
         }
-        // this.props.history.push("/")
+        // this.props.history.push("/home");
+        history.push('/');
     }
 
     handleChatSubmit = (e) => {
         let id = null
-        if (this.state.selectedUsers == "") {
+        console.log(this.state)
+        if (this.state.chatDescription == "") {
+            alert("Please enter the chat's description")
+            return;
+        }
+        if (this.state.selectedUsers.value == undefined) {
             id = this.state.chatiID
         }
         else {
@@ -439,7 +453,7 @@ class Navbar extends Component {
             invalidLoginError = <div style={{ 'color': 'red' }}>{this.props.loginMessage}</div>
         }
         if (this.state.signUpBackendError) {
-            invalidSignUpError = <div style={{ 'color': 'red' }}>{this.props.signUpMessage}</div>
+            invalidSignUpError = <div style={{ 'color': 'red' }}>Email already exists</div>
         }
         if (this.state.error) {
             renderError = <div style={{ 'color': 'red' }}>{this.state.errorMessage}</div>
@@ -451,18 +465,15 @@ class Navbar extends Component {
                         {this.state.logout ? <Link to="/"></Link> : ""}
 
                     </div>
-
-
                     <div className="row">
                         <div className="col-2">
-                            <Link to="/"><img src={reddit_logo} className="logo-image" alt="reddit-logo" /></Link>
+                            <Link to="/dashboard"><img src={reddit_logo} className="logo-image" alt="reddit-logo" /></Link>
                         </div>
                         <div className="col-1 dropdown" style={{ paddingRight: "0px" }}>
                             <button className="btn dropdown-toggle navbar-dropdown-button" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-edit"></i> <span class="nav-username">Create</span>
                             </button>
                             <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                <Link to="/create-post" className="dropdown-item" type="button" value="home"><i class="fas fa-edit dd-icon"></i><span className="dd-item">Create Post</span></Link>
                                 <Link to="/create-community" className="dropdown-item" type="button" value="mycommunities"><i class="fas fa-edit dd-icon"></i><span className="dd-item">Create Community</span></Link>
                             </div>
                         </div>
@@ -480,20 +491,22 @@ class Navbar extends Component {
                             </div>
                         </div>
                         < div className="col-2 nav-icon-div" style={{ paddingRight: "0px" }}>
-                            <Link > <i class="fas fa-comment-dots nav-icon-button" onClick={this.handleChatApplicationClick} style={{ marginRight: "10px" }} ></i></Link>
+                            <Link to="/chat" > <i class="fas fa-comment-dots nav-icon-button" onClick={this.handleChatApplicationClick} style={{ marginRight: "10px" }} ></i></Link>
                             <NotificationIcon />
                         </div>
                         {/* <Dropdown isOpen={dropdownOpen} toggle={toggle}> */}
                         <div className="col-2" style={{ textAlign: "right" }} style={{ paddingLeft: "0px" }}>
                             <div className="dropdown">
-                                <button className="btn dropdown-toggle navbar-dropdown-button" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <img src="/logo192.png" alt="Avatar" class="nav-avatar" />  <span class="nav-username">{cookie.load('userName')}</span>
+                                <button style={{ marginTop: "5px" }} className="btn dropdown-toggle navbar-dropdown-button" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="nav-username">{cookie.load('userName')}</span>
                                 </button>
                                 <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                    <Link to="/" className="dropdown-item" type="button" value="home"><i class="fas fa-home dd-icon"></i><span className="dd-item">Home</span></Link>
+                                    <Link to="/dashboard" className="dropdown-item" type="button" value="home"><i class="fas fa-home dd-icon"></i><span className="dd-item">Home</span></Link>
+
                                     <Link to="/profile" className="dropdown-item" type="button" value="profile"><i class="fas fa-id-badge dd-icon" /><span className="dd-item">Profile</span></Link>
                                     <Link to="/my-communities" className="dropdown-item" type="button" value="mycommunities"><i class="fas fa-users dd-icon"></i><span className="dd-item">My Communities</span></Link>
                                     <Link to="/my-community-analytics" className="dropdown-item" type="button" value="mycommunities"><i class="fas fa-users dd-icon"></i><span className="dd-item">Community Analytics </span></Link>
+                                    <Link to="/my-communities-mod" className="dropdown-item" type="button" value="mycommunities"><i class="fas fa-bell"></i><span className="dd-item">Community Moderation </span></Link>
 
 
                                     <Link to="/search-community" className="dropdown-item" type="button" value="mycommunities"><i class="fas fa-search"></i><span className="dd-item">Search Communities</span></Link>
@@ -815,6 +828,7 @@ class Navbar extends Component {
                                         <Row>
                                             <input type="text" style={{ width: "100%" }} name="signupname" onChange={this.handleInputChange} placeholder="USERNAME" autoFocus required />
                                             <input type="email" style={{ width: "100%", marginTop: "10%" }} name="signupemail" onChange={this.handleEmailChange} placeholder="EMAIL" autoFocus required />
+                                            {invalidSignUpError}
 
                                             <input type="password" style={{ width: "100%", marginTop: "10%" }} name="signuppassword" placeholder="PASSWORD" onChange={this.handleOtherChange} required />
                                             <button type="button" id="login-button" style={{ backgroundColor: "#0079d3", color: "white", borderRadius: "60px", width: "100%", marginTop: "10%" }} class="btn btn-outline-primary" onClick={this.handleSignUpSubmit}><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Continue</strong></span></button>
@@ -822,7 +836,6 @@ class Navbar extends Component {
                                             <div style={{ marginTop: "3%", fontSize: "12px" }}>
                                                 Already a redditor? <strong><span ><button style={{ color: "#0079d3", textTransform: "uppercase", border: "none", fontWeight: "700", backgroundColor: "white" }} onClick={this.mutualButtonCLick}><bold>Log In</bold></button ></span></strong>
                                             </div>
-                                            {invalidSignUpError}
 
                                         </Row>
                                     </div>
@@ -888,7 +901,7 @@ const matchStateToProps = (state) => {
         loginError: state.loginReducer.loginError,
         loginMessage: state.loginReducer.loginMessage,
         signUpError: state.SignUpReducer.signUpError,
-        signUpMessage: state.SignUpReducer.signUpMessage,
+        signUpMessage: state.SignUpReducer.signUpmessage,
         chatData: state.chatReducer.chatData
     }
 

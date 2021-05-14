@@ -39,9 +39,11 @@ function auth() {
   // Without kafka Implementation
   passport.use(
     new JwtStrategy(opts, (decodedPayload, callback) => {
+      console.log(decodedPayload);
       const user_id = decodedPayload._id;
       client.get(user_id, function (err, user) {
-        console.log("REDIS",user);
+        console.log("REDIS", user);
+        console.log(user_id);
         if (user) {
           console.log("Coming here ", user);
           user = JSON.parse(user);
@@ -49,14 +51,14 @@ function auth() {
           return;
         }
         Users.findById(user_id, "name email", (error, user) => {
-          console.log(user_id);
+          console.log(user, "HERE");
           if (error) {
             return callback(error, false);
           } else if (user) {
             //client.setex("user",6000,user);
             console.log("Key not found ", user);
             client.set(user_id, JSON.stringify(user));
-            callback(null, user);;
+            callback(null, user);
           } else {
             callback(null, false);
           }

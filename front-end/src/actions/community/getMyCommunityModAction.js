@@ -29,16 +29,32 @@ let errorGetMyCommunityMod = (err, data) => {
 let getMyCommunityMod = (data) => (dispatch) => {
   axios.defaults.headers.common["authorization"] = cookie.load("token");
   axios.defaults.withCredentials = true;
-  return axios
-    .get(
-      BACKEND_URL +
+
+  let API_URL =
+    BACKEND_URL +
+    ":" +
+    BACKEND_PORT +
+    "/community/myCommunities?pageNumber=" +
+    data.pageNumber +
+    "&pageSize=" +
+    data.pageSize;
+
+  if (data.searchKeyword != null || data.searchKeyword != undefined) {
+    if (data.searchKeyword.trim().length > 0) {
+      API_URL =
+        BACKEND_URL +
         ":" +
         BACKEND_PORT +
         "/community/myCommunities?pageNumber=" +
         data.pageNumber +
         "&pageSize=" +
-        data.pageSize
-    )
+        data.pageSize +
+        "&searchKeyword=" +
+        data.searchKeyword;
+    }
+  }
+  return axios
+    .get(API_URL)
     .then((response) => {
       if (response.status === 200) {
         console.log("api response>>>>>>>>>>", response);

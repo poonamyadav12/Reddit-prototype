@@ -1,7 +1,7 @@
 //Created by Priyansh Patel
 
 import React, { Component } from 'react';
-import Navbar from '../navbar/navbar';
+import Navbar from "../navbar/navbar";
 import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
 import './myCommunities.css';
@@ -9,6 +9,8 @@ import { connect } from "react-redux";
 import { Card, Button, CardTitle, CardText, CardBody } from 'reactstrap';
 import myCommunitiesAction from '../../actions/community/myCommunitiesAction';
 import CommunityList from './communityList';
+import ReactPaginate from "react-paginate";
+import myCommunitiesDeleteAction from '../../actions/community/myCommunitiesDeleteAction';
 
 class MyCommunities extends Component {
     constructor(props) {
@@ -17,8 +19,14 @@ class MyCommunities extends Component {
             userId: cookie.load('userId'),
             error: false,
             myCommunitiesData: this.props.myCommunitiesData.data,
-            // communityList: this.props.myCommunitiesData.data.communities,
+            totalPages: "1",
+            pageNumber: "1",
+            pageSize: "2",
+            sortBy: "createdAt",
+            sortOrder: "desc",
+            communityList: [],
         }
+
         // this.editButtonClicked = this.editButtonClicked.bind(this);
         // this.removeButtonClicked = this.removeButtonClicked(this);
     }
@@ -33,7 +41,8 @@ class MyCommunities extends Component {
             } else {
                 this.setState({
                     myCommunitiesData: this.props.myCommunitiesData.data,
-                    communityList: this.props.myCommunitiesData.data.communities, 
+                    communityList: this.props.myCommunitiesData.data.docs,
+                    totalPages: this.props.myCommunitiesData.data.totalPages,
                 })
             }
         })
@@ -41,49 +50,187 @@ class MyCommunities extends Component {
 
     editButtonClicked = (community) => {
         console.log("Edit button clicked>>>>>>>>>>>>>>>>>", community)
-        // Open create community page
-        return (
-            <Redirect to={{
-                pathname: '/create-community/' + community._id,
-                data: community,
-            }}
-            />
-        )
+        window.location.assign('/create-community/' + community._id)
+    }
+    inviteButtonClicked = (community) => {
+        alert("hi")
     }
 
     removeButtonClicked = (community) => {
         console.log("Remove button clicked>>>>>>>>>>>>>>>>>>>>>", community)
         // Delete Community
 
-        const newCommunityList = this.state.communityList.filter((filteredCommunity) => {
-            console.log("Remove button community ", community)
-            console.log("Remove button filtered community", filteredCommunity)
-            return community.communityId != filteredCommunity.communityId
-        });
-        const emptyCommunitiesFlag = newCommunityList.length == 0 ? true : false;
+        let answer = window.confirm("Are you sure you want to delete this community?");
+        if (answer) {
+            let reqObj = {
+                _id: community._id
+            }
+            this.props.myCommunitiesDeleteAction(reqObj).then(response => {
+                console.log("My communities response >>>>>>>>>>>>>", this.props)
+                if (this.props.myCommunitiesError) {
+                    this.setState({
+                        error: true
+                    })
+                } else {
+                    const newCommunityList = this.state.communityList.filter((filteredCommunity) => {
+                        console.log("Remove button community ", community)
+                        console.log("Remove button filtered community", filteredCommunity)
+                        return community._id != filteredCommunity._id
+                    });
+                    const emptyCommunitiesFlag = newCommunityList.length == 0 ? true : false;
+                    this.setState({
+                        communityList: newCommunityList,
+                        emptyCommunitiesFlag,
+                        totalPages: this.props.myCommunitiesData.data.totalPages,
+                    })
+                }
+            })
+        }
+    }
+
+    handlePageSizeChange = (e) => {
+        e.preventDefault();
         this.setState({
-            communityList: newCommunityList,
-            emptyCommunitiesFlag
+            pageSize: e.target.value,
+            pageNumber: "1"
+        });
+        let pageSize = e.target.value
+
+        let reqobj = {
+            userId: cookie.load('userId'),
+            pageSize: pageSize,
+            pageNumber: "1",
+            sortBy: this.state.sortBy,
+            sortOrder: this.state.sortOrder,
+            myCommunitiesData: this.state.myCommunitiesData,
+            communityList: this.state.communityList,
+        }
+
+        this.props.myCommunitiesAction(reqobj).then(response => {
+            console.log("My communities response >>>>>>>>>>>>>", this.props)
+            if (this.props.myCommunitiesError) {
+                this.setState({
+                    error: true
+                })
+            } else {
+                this.setState({
+                    myCommunitiesData: this.props.myCommunitiesData.data,
+                    communityList: this.props.myCommunitiesData.data.docs,
+                    totalPages: this.props.myCommunitiesData.data.totalPages,
+                })
+            }
+        })
+    }
+
+    handlePageClick = (e) => {
+        this.setState({
+            pageNumber: Number(e.selected) + 1,
+        });
+        let pageNumber = Number(e.selected) + 1
+
+        let reqobj = {
+            userId: cookie.load('userId'),
+            pageSize: this.state.pageSize,
+            pageNumber: pageNumber,
+            sortBy: this.state.sortBy,
+            sortOrder: this.state.sortOrder,
+            myCommunitiesData: this.state.myCommunitiesData,
+            communityList: this.state.communityList,
+        }
+
+        this.props.myCommunitiesAction(reqobj).then(response => {
+            console.log("My communities response >>>>>>>>>>>>>", this.props)
+            if (this.props.myCommunitiesError) {
+                this.setState({
+                    error: true
+                })
+            } else {
+                this.setState({
+                    myCommunitiesData: this.props.myCommunitiesData.data,
+                    communityList: this.props.myCommunitiesData.data.docs,
+                    totalPages: this.props.myCommunitiesData.data.totalPages,
+                })
+            }
+        })
+    }
+
+    handleSortOrder = (e) => {
+        this.setState({
+            sortOrder: e.target.value
+        });
+        let sortOrder = e.target.value
+
+        let reqobj = {
+            userId: cookie.load('userId'),
+            pageSize: this.state.pageSize,
+            pageNumber: this.state.pageNumber,
+            sortBy: this.state.sortBy,
+            sortOrder: sortOrder,
+            myCommunitiesData: this.state.myCommunitiesData,
+            communityList: this.state.communityList,
+        }
+
+        this.props.myCommunitiesAction(reqobj).then(response => {
+            console.log("My communities response >>>>>>>>>>>>>", this.props)
+            if (this.props.myCommunitiesError) {
+                this.setState({
+                    error: true
+                })
+            } else {
+                this.setState({
+                    myCommunitiesData: this.props.myCommunitiesData.data,
+                    communityList: this.props.myCommunitiesData.data.docs,
+                    totalPages: this.props.myCommunitiesData.data.totalPages,
+                })
+            }
+        })
+    }
+
+    handleSortBy = (e) => {
+        this.setState({
+            sortBy: e.target.value
+        });
+        let sortBy = e.target.value
+
+        let reqobj = {
+            userId: cookie.load('userId'),
+            pageSize: this.state.pageSize,
+            pageNumber: this.state.pageNumber,
+            sortBy: sortBy,
+            sortOrder: this.state.sortOrder,
+            myCommunitiesData: this.state.myCommunitiesData,
+            communityList: this.state.communityList,
+        }
+
+        this.props.myCommunitiesAction(reqobj).then(response => {
+            console.log("My communities response >>>>>>>>>>>>>", this.props)
+            if (this.props.myCommunitiesError) {
+                this.setState({
+                    error: true
+                })
+            } else {
+                this.setState({
+                    myCommunitiesData: this.props.myCommunitiesData.data,
+                    communityList: this.props.myCommunitiesData.data.docs,
+                    totalPages: this.props.myCommunitiesData.data.totalPages,
+                })
+            }
         })
     }
 
     render() {
-        let redirectVar = null;
-        if (!cookie.load('token')) {
-            // redirectVar = <Redirect to="/" />
-        };
-
         let myCommunities = <div>No communities to show</div>
-        console.log("myCommunities PROPS data>>>>>>>>>>>>", this.props.myCommunitiesData.data)
-        console.log("STATEEEE>>>>>>>>", this.state)
+
         if (this.state.communityList) {
             if (this.state.communityList.length !== 0) {
                 myCommunities = this.state.communityList.map((community) => {
                     return <CommunityList
-                        key={community.communityId}
+                        key={community._id}
                         data={community}
                         editButtonClicked={this.editButtonClicked}
                         removeButtonClicked={this.removeButtonClicked}
+                        inviteButtonClicked={this.inviteButtonClicked}
+
                     />
                 })
             }
@@ -91,7 +238,7 @@ class MyCommunities extends Component {
 
         return (
             <div>
-                {redirectVar}
+                { !cookie.load('token') ? window.location.href = '/' : null}
                 <div><Navbar /></div>
                 <div class="com-header">
                     My Communities
@@ -102,101 +249,59 @@ class MyCommunities extends Component {
                             <Card>
                                 <CardBody class="sort-header">
                                     <div class="row">
-                                        <span style={{ paddingLeft: "20px" }}>Created</span>
-                                    </div>
-                                    <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
-                                        <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select">
-                                            <option selected value="1">Most Recent</option>
-                                            <option value="2">Oldest</option>
-                                        </select>
-                                    </div>
-                                    <hr />
-                                    <div class="row">
-                                        <span style={{ paddingLeft: "20px" }}>Number of posts</span>
-                                    </div>
-                                    <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
-                                        <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select">
-                                            <option selected value="1">Highest</option>
-                                            <option value="2">Lowest</option>
-                                        </select>
-                                    </div>
-                                    <hr />
-                                    <div class="row">
-                                        <span style={{ paddingLeft: "20px" }}>Number of users</span>
+                                        <span style={{ paddingLeft: "20px" }}>Page Size</span>
                                     </div>
                                     <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
                                         <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select" onChange={this.handlePageSizeChange}>
-                                            <option selected value="1">Highest</option>
-                                            <option value="2">Lowest</option>
+                                            <option selected value="2">2</option>
+                                            <option value="5">5</option>
+                                            <option value="10">10</option>
                                         </select>
                                     </div>
                                     <hr />
-
+                                    <div class="row">
+                                        <span style={{ paddingLeft: "20px" }}>Sort By</span>
+                                    </div>
+                                    <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
+                                        <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select" onChange={this.handleSortBy}>
+                                            <option selected value="createdAt">Created Date</option>
+                                            <option value="numberOfPosts">Number of Posts</option>
+                                            <option value="numberOfUsers">Number of Users</option>
+                                        </select>
+                                    </div>
+                                    <hr />
+                                    <div class="row">
+                                        <span style={{ paddingLeft: "20px" }}>Order By</span>
+                                    </div>
+                                    <div class="input-group mb-3" style={{ paddingLeft: "5px" }}>
+                                        <select class="form-select" style={{ fontWeight: "bold", width: "350px" }} aria-label="user select" onChange={this.handleSortOrder}>
+                                            <option selected value="desc">Descending</option>
+                                            <option value="asc">Ascending</option>
+                                        </select>
+                                    </div>
                                 </CardBody>
                             </Card>
                         </div>
-                        <div class="col-6" style={{ paddingLeft: "0", paddingRight: "24px", paddingTop: "20px" }}>
+                        <div class="col-6" style={{ paddingLeft: "0", paddingRight: "24px", paddingTop: "20px", marginBottom: "5%" }}>
                             {myCommunities}
-                            {/* <Card>
-                                <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/CrytoCurrency</span>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right" }} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "white", borderRadius: "60px", marginLeft: "10%", float: "right" }} class="btn btn-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Edit</strong></span></button>
-                                    <br />
-                                    <span className="com-desc">Description. Trying to make it long. Even more long. Like really very long.</span>
-                                    <br />
-                                    <span className="com-details"><i class="fas fa-users"></i> 100</span>
-                                    <span className="com-details"><i class="fas fa-copy"></i> 200</span>
-                                </CardBody>
-                            </Card>
-                            <Card>
-                                <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/coolGuides</span>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right" }} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "white", borderRadius: "60px", marginLeft: "10%", float: "right" }} class="btn btn-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Edit</strong></span></button>
-                                    <br />
-                                    <span className="com-desc">Description. Trying to make it long. Even more long. Like really very long.</span>
-                                    <br />
-                                    <span className="com-details"><i class="fas fa-users"></i> 100</span>
-                                    <span className="com-details"><i class="fas fa-copy"></i> 200</span>
-                                </CardBody>
-                            </Card>
-                            <Card>
-                                <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/Cars</span>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right" }} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "white", borderRadius: "60px", marginLeft: "10%", float: "right" }} class="btn btn-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Edit</strong></span></button>
-                                    <br />
-                                    <span className="com-desc">Description. Trying to make it long. Even more long. Like really very long.</span>
-                                    <br />
-                                    <span className="com-details"><i class="fas fa-users"></i> 100</span>
-                                    <span className="com-details"><i class="fas fa-copy"></i> 200</span>
-                                </CardBody>
-                            </Card>
-                            <Card>
-                                <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/gadgets</span>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right" }} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "white", borderRadius: "60px", marginLeft: "10%", float: "right" }} class="btn btn-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Edit</strong></span></button>
-                                    <br />
-                                    <span className="com-desc">Description. Trying to make it long. Even more long. Like really very long.</span>
-                                    <br />
-                                    <span className="com-details"><i class="fas fa-users"></i> 100</span>
-                                    <span className="com-details"><i class="fas fa-copy"></i> 200</span>
-                                </CardBody>
-                            </Card>
-                            <Card>
-                                <CardBody class="com-card">
-                                    <img src="/logo192.png" alt="Avatar" class="com-avatar" /> <span class="com-name">r/formula1</span>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "rgb(0, 121, 211)", borderRadius: "60px", marginLeft: "1%", float: "right" }} class="btn btn-outline-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Remove</strong></span></button>
-                                    <button type="button" style={{ borderColor: "#0079d3", color: "white", borderRadius: "60px", marginLeft: "10%", float: "right" }} class="btn btn-primary"><span style={{ fontSize: "16px", fontWeight: "300px" }}><strong>Edit</strong></span></button>
-                                    <br />
-                                    <span className="com-desc">Description. Trying to make it long. Even more long. Like really very long.</span>
-                                    <br />
-                                    <span className="com-details"><i class="fas fa-users"></i> 100</span>
-                                    <span className="com-details"><i class="fas fa-copy"></i> 200</span>
-                                </CardBody>
-                            </Card> */}
+                            <div className="row">
+                                <div className="col pagination-class">
+                                    <ReactPaginate
+                                        previousLabel={"prev"}
+                                        nextLabel={"next"}
+                                        breakLabel={"..."}
+                                        breakClassName={"break-me"}
+                                        pageCount={this.state.totalPages}
+                                        // pageCount={1}
+                                        marginPagesDisplayed={2}
+                                        pageRangeDisplayed={5}
+                                        onPageChange={this.handlePageClick}
+                                        containerClassName={"pagination"}
+                                        subContainerClassName={"pages pagination"}
+                                        activeClassName={"active"}
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-2" style={{ paddingLeft: "0", paddingTop: "20px", marginRight: "65px" }}>
 
@@ -222,7 +327,7 @@ const matchStateToProps = (state) => {
 const matchDispatchToProps = (dispatch) => {
     return {
         myCommunitiesAction: (data) => dispatch(myCommunitiesAction(data)),
-
+        myCommunitiesDeleteAction: (data) => dispatch(myCommunitiesDeleteAction(data))
     }
 }
 

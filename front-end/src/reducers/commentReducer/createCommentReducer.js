@@ -1,5 +1,5 @@
 let initialState = {
-    commentData: {},
+    getCommentData: {},
     error: "",
     message: ""
 }
@@ -8,7 +8,7 @@ let createCommunity = (state = initialState, action) => {
     let newState = { ...state }
     switch (action.type) {
         case "create_comment_success":
-            newState.commentData = action.payload.response.data;
+            newState.getCommentData = action.payload.response.data;
             newState.error = false;
             newState.message = "Comment created successfully";
             return newState;

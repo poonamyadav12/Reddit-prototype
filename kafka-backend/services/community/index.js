@@ -4,15 +4,17 @@ import {
   getAllCommunityForUser,
   getCommunityDetails,
   getAllPosts,
-  getAllCreatedCommunitiesByUserId, getCommunityListCreatedByUser, deleteCommunity,
+  getAllCreatedCommunitiesByUserId,
+  getCommunityListCreatedByUser,
+  deleteCommunity,
   requestToJoinCommunity,
   communityUpVote,
   communityDownVote,
-  communitySearch
-
+  communitySearch,
+  getMyCommunitiesOfAUser,
+  getCommunityStatus,
 } from "../../apis/community_api";
 const { communityAnalytics } = require("../../apis/community_analytics_api");
-
 
 export const handle_request = async (message, callback) => {
   console.log("Handle Request for Community ", message);
@@ -40,10 +42,14 @@ export const handle_request = async (message, callback) => {
     case "community-downvote":
       return communityDownVote(message, callback);
     case "community-search":
-      return communitySearch(message, callback);  
+      return communitySearch(message, callback);
       return getAllCreatedCommunities(message, callback);
     case "community_analytics":
       return communityAnalytics(message, callback);
+    case "get-mycommunities-of-user":
+      return getMyCommunitiesOfAUser(message, callback);
+    case "get-community-status":
+      return getCommunityStatus(message, callback);
     default:
       return callback({ status: 500, data: "no path found" }, null);
   }

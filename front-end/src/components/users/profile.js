@@ -7,6 +7,7 @@ import updateUserProfileAction from '../../actions/userUpdateAction';
 import userGetByIDAction from '../../actions/userGetByIDAction';
 import { connect } from "react-redux";
 //import Navbar from "../Navbar/Navbar";
+import avatar from '../../images/avatar.png';
 
 import cookie from "react-cookies";
 import Navbar from "../navbar/navbar";
@@ -185,6 +186,7 @@ class Profile extends Component {
     }
     render() {
         let renderError = null;
+        console.log(this.state)
         if (this.props.error) {
             // renderError = <div style={{ 'color': 'red' }}>{this.state.errorMessage}</div>
             renderError = <div class="alert alert-danger" role="alert" style={{ width: "100%" }}>{this.props.message}</div>
@@ -206,6 +208,7 @@ class Profile extends Component {
 
         return (
             <div>
+                { !cookie.load('token') ? window.location.href = '/' : null}
                 <div>
                     <Navbar />
                 </div>
@@ -241,12 +244,12 @@ class Profile extends Component {
                     <form onSubmit={this.handleOnSubmit} method="post">
                         <div className="row">
                             <div className="col-2">
-                                {/* <img src={this.state.image} width="200" height="200" alt="" /> */}
+                                {/* <img src={avatar} width="200" height="200" alt="" /> */}
                                 {this.state.profilePicture != null ?
                                     this.state.profilePicture != "" ?
                                         <img src={this.state.profilePicture} width="200" height="200" alt="" />
-                                        : <img src={this.state.image} width="200" height="200" alt="" />
-                                    : <img src={this.state.image} width="200" height="200" alt="" />}
+                                        : <img src={avatar} width="200" height="200" alt="" />
+                                    : <img src={avatar} width="200" height="200" alt="" />}
 
                                 <div className="row"><p style={{ "margin-left": '20px' }}>Change your Avatar</p></div>
                                 <div className="row">

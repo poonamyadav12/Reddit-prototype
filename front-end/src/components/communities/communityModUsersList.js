@@ -23,8 +23,24 @@ import { InputGroup, InputGroupAddon, InputGroupText, Input } from "reactstrap";
 import bulkRequestAcceptAction from "../../actions/community/bulkRequestAcceptAction";
 import getMyCommunityModMemAction from "../../actions/community/getMyCommunityModMemAction";
 import ReactPaginate from "react-paginate";
+import CommunityModCommunityList from './communityModCommunityList';
+import Modal from "react-modal";
 
 let checkedUserList = [];
+let toggledMember = null;
+
+const customStyles = {
+  content: {
+    top: "40%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    height: "500px",
+    width: "1280px",
+    transform: "translate(-50%, -50%)",
+  },
+};
 
 class CommunityModUsersList extends Component {
   constructor(props) {
@@ -49,6 +65,8 @@ class CommunityModUsersList extends Component {
       memberPageSize: "2",
       memberSearchKeyword: "",
       userReqSearchKeyword: "",
+      removeUsersPopUp: false,
+      toggledUserId: null,
     };
   }
   componentDidMount() {
@@ -84,6 +102,18 @@ class CommunityModUsersList extends Component {
       }
     });
   }
+
+  toggleCommunityList = (member) => {
+    console.log("toggle@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", member)
+    if (member) {
+      this.setState({
+        toggledUserId: member._id,
+      })
+    }
+    this.setState({
+      removeUsersPopUp: !this.state.removeUsersPopUp,
+    });
+  };
 
   handlePageClickMembers = (e) => {
     this.setState({
@@ -394,7 +424,7 @@ class CommunityModUsersList extends Component {
           <Row>
             <Col sm="6">
               <Card>
-                <CardBody>
+                <CardBody onClick={() => this.toggleCommunityList(member)}>
                   {member.avatar ? (
                     <img src={member.avatar} alt="Avatar" class="com-avatar" />
                   ) : (
@@ -410,6 +440,7 @@ class CommunityModUsersList extends Component {
     }
 
     return (
+      <div>
       <div style={{ backgroundColor: "rgb(218,224,230)", height: "1000px" }}>
         <span
           onClick={this.props.closePopUp}
@@ -614,6 +645,17 @@ class CommunityModUsersList extends Component {
             ) : null
           ) : null}
         </div>
+      </div>
+      <Modal
+          style={customStyles}
+          isOpen={this.state.removeUsersPopUp}
+          ariaHideApp={false}
+        >
+          <CommunityModCommunityList
+            data={this.state}
+            closePopUp={() => this.toggleCommunityList(null)}
+          />
+        </Modal>
       </div>
     );
   }

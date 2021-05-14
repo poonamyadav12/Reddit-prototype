@@ -26,6 +26,7 @@ var errorUser = (err, data) => {
     }
 }
 var loginAction = (data) => (dispatch) => {
+    console.log(data)
     return axios
         .post(BACKEND_URL + ":" + BACKEND_PORT + '/user/login', data)
         .then((response) => {
@@ -40,6 +41,11 @@ var loginAction = (data) => (dispatch) => {
                     maxAge: 90000
                 })
                 cookie.save("auth", true, {
+                    path: '/',
+                    httpOnly: false,
+                    maxAge: 90000
+                })
+                cookie.save("userName", response.data.user.name, {
                     path: '/',
                     httpOnly: false,
                     maxAge: 90000

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router'
 import { Link } from 'react-router-dom'
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../navbar/navbar";
 import userProfileAction from '../../actions/userProfileAction';
 import { connect } from "react-redux";
 import {

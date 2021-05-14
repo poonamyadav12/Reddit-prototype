@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Navbar from '../Navbar/Navbar'
+import Navbar from '../navbar/navbar'
 import getDashboardDataAction from '../../actions/dashboard/getDashboardData';
 import { connect } from "react-redux";
 import DashboardPost from './DashboardPost';

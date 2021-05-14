@@ -225,6 +225,15 @@ export async function getCommunityDetails(message, callback) {
   console.log("Inside get communityId details Request");
   try {
     const communityDetail = await getCommunityById(communityId);
+    if (!communityDetail) {
+      error.status = 400;
+      error.data = {
+        code: "400",
+        msg:
+          "Invalid Community Id",
+      };
+      return callback(error, null);
+    }
     response.status = 200;
     response.data = communityDetail;
     return callback(response, null);
@@ -531,6 +540,9 @@ async function getCommunityById(communityId) {
 
   console.log("Community ID ", communityId);
   console.log("Community ", community);
+  if (!community) {
+    return null;
+  }
   const communityVotes = await CommunityVotesModel.find({ communityId });
   console.log("CommunityVotes ", communityVotes);
   const votes = communityVotes.map((cv) => cv.vote).reduce((a, b) => a + b, 0);
@@ -809,6 +821,15 @@ async function communityVote(message, callback) {
         createdBy: userId,
       });
       const community = await getCommunityById(communityId);
+      if (!community) {
+        error.status = 400;
+        error.data = {
+          code: "400",
+          msg:
+            "Invalid Community Id",
+        };
+        return callback(error, null);
+      }
       response.status = 200;
       response.data = community;
       return callback(null, response);
@@ -824,6 +845,15 @@ async function communityVote(message, callback) {
     { upsert: true } // Make this update into an upsert
   );
   const community = await getCommunityById(communityId);
+  if (!community) {
+    error.status = 400;
+    error.data = {
+      code: "400",
+      msg:
+        "Invalid Community Id",
+    };
+    return callback(error, null);
+  }
   response.status = 200;
   response.data = community;
   console.log("CommunityX ", community);

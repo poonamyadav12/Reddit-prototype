@@ -18,7 +18,7 @@ import Notification from './users/Notification';
 import UserProfilePage from './users/user-profile';
 import CommunitySearch from './community/CommunitySearch';
 import logout from './users/logout';
-import Dashboard from './users/Dashboard';
+import Dashboard from './users/dashboard';
 
 
 class Routes extends Component {

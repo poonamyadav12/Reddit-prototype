@@ -6,7 +6,7 @@ import React, { Component } from 'react'
 import { TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, CardTitle, CardText, Row, Col, FormGroup } from 'reactstrap';
 import { Form, Label, Input, FormText } from 'reactstrap';
 
-import Navbar from '../Navbar/Navbar';
+import Navbar from '../navbar/navbar';
 
 //import Navbar from '../Navbar/Navbar';
 

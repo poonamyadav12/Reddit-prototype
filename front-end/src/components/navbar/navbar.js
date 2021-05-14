@@ -844,6 +844,11 @@ const NotificationIcon = (props) => {
 
     useInterval(() => fetchData(), 15000);
 
+    // Similar to componentDidMount and componentDidUpdate:
+    useEffect(() => {
+        fetchData();
+    });
+
     async function fetchData() {
         axios.defaults.headers.common["authorization"] = cookie.load('token')
         axios.defaults.withCredentials = true;

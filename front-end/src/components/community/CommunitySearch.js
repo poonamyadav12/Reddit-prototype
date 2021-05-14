@@ -3,7 +3,7 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router'
 import { Link } from 'react-router-dom'
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../navbar/navbar";
 import { Row, Col } from 'reactstrap';
 import axios from 'axios';
 import { BACKEND_URL } from '../../config/config';
